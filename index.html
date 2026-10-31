@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -231,6 +232,7 @@
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
     const SUPABASE_URL = 'https://akyfxbszkakraglqthiw.supabase.co';
+    // Use only the Supabase anon/publishable key in browser code; never service_role.
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFreWZ4YnN6a2FrcmFnbHF0aGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA5MDkzMTAsImV4cCI6MjEwNjQ4NTMxMH0.5FOIi-nInybYckGdKXoFM9yeXJ3Q5n7JsHHVcpalnb0';
 
     const message = document.getElementById('message');
@@ -276,51 +278,93 @@
         auth: {
           autoRefreshToken: true,
           persistSession: true,
-          detectSessionInUrl: true,
-          flowType: 'implicit'
+          detectSessionInUrl: false,
+          flowType: 'pkce'
         }
       });
 
-      // The Supabase recovery email usually returns access_token and refresh_token
-      // in the URL fragment. Let the SDK process the URL, then verify a session exists.
-      const { data: { session }, error } = await supabase.auth.getSession();
+      const url = new URL(window.location.href);
+      const query = url.searchParams;
+      const hashParams = new URLSearchParams(url.hash.replace(/^#/, ''));
 
-      if (error) {
-        showMessage('The reset link could not be verified. Request a new password-reset email.');
+      // Flow A: PKCE-style callback. This succeeds only when the browser has
+      // the matching code verifier. If the reset email was requested inside a
+      // native Flutter app, the verifier may be stored in the app, not this browser.
+      const code = query.get('code');
+      if (code) {
+        const { data, error: exchangeError } =
+          await supabase.auth.exchangeCodeForSession(code);
+
+        if (!exchangeError && data.session) {
+          recoveryReady = true;
+          history.replaceState(null, document.title, url.pathname);
+          return;
+        }
+
+        console.error('Password recovery code exchange failed:', exchangeError);
+        showMessage(
+          'The reset link could not establish a recovery session in this browser. ' +
+          'Request a new reset email after configuring the app and web page to use a compatible recovery flow.'
+        );
         return;
       }
 
-      if (session) {
-        recoveryReady = true;
+      // Flow B: token_hash query parameter (works with a custom Supabase email
+      // template that links to the hosted page with token_hash and type=recovery).
+      const tokenHash = query.get('token_hash');
+      const queryType = query.get('type');
+      if (tokenHash && queryType === 'recovery') {
+        const { data, error: verifyError } = await supabase.auth.verifyOtp({
+          token_hash: tokenHash,
+          type: 'recovery'
+        });
+
+        if (!verifyError && data.session) {
+          recoveryReady = true;
+          history.replaceState(null, document.title, url.pathname);
+          return;
+        }
+
+        console.error('Password recovery token verification failed:', verifyError);
+        showMessage('This reset link is invalid, already used, or expired. Request a new one.');
         return;
       }
 
-      // Support links that include tokens in the URL fragment, while avoiding
-      // displaying token values in the page.
-      const params = new URLSearchParams(window.location.hash.replace(/^#/, ''));
-      const accessToken = params.get('access_token');
-      const refreshToken = params.get('refresh_token');
-      const type = params.get('type');
+      // Flow C: implicit callback with access_token and refresh_token in URL hash.
+      const accessToken = hashParams.get('access_token');
+      const refreshToken = hashParams.get('refresh_token');
+      const hashType = hashParams.get('type');
 
-      if (accessToken && refreshToken && (!type || type === 'recovery')) {
+      if (accessToken && refreshToken && (!hashType || hashType === 'recovery')) {
         const { data, error: sessionError } = await supabase.auth.setSession({
           access_token: accessToken,
           refresh_token: refreshToken
         });
 
-        if (sessionError || !data.session) {
-          showMessage('This reset link is invalid or expired. Request a new one.');
+        if (!sessionError && data.session) {
+          recoveryReady = true;
+          history.replaceState(null, document.title, url.pathname);
           return;
         }
 
-        recoveryReady = true;
-        // Remove sensitive tokens from the visible address bar after the SDK has
-        // accepted the session. Do not do this before the session is established.
-        history.replaceState(null, document.title, window.location.pathname + window.location.search);
+        console.error('Password recovery session setup failed:', sessionError);
+        showMessage('This reset link is invalid or expired. Request a new one.');
         return;
       }
 
-      showMessage('Your reset link is missing or has expired. Request a new password-reset email.');
+      // Last check: the SDK may already have processed the URL and persisted a session.
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (!sessionError && session) {
+        recoveryReady = true;
+        return;
+      }
+
+      const authError = query.get('error_description') || hashParams.get('error_description');
+      showMessage(
+        authError
+          ? `Supabase rejected this reset link: ${authError.replace(/\+/g, ' ')}`
+          : 'Your reset link is missing or has expired. Request a new password-reset email.'
+      );
     }
 
     document.querySelectorAll('.toggle').forEach((button) => {
@@ -384,3 +428,4 @@
   </script>
 </body>
 </html>
+
