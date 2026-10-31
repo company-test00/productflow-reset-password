@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#B88A24" />
+  <title>Reset Password | ProductFlow</title>
+  <style>
+    :root {
+      --gold: #B88A24;
+      --gold-dark: #96701B;
+      --gold-soft: #FBF5E7;
+      --ink: #242424;
+      --muted: #737373;
+      --line: #E7E2D7;
+      --page: #F8F7F3;
+      --white: #FFFFFF;
+      --success: #177245;
+      --danger: #B42318;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px 16px;
+      background:
+        radial-gradient(circle at top left, rgba(184,138,36,.12), transparent 34%),
+        var(--page);
+      color: var(--ink);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    }
+    .card {
+      width: 100%;
+      max-width: 440px;
+      padding: 36px;
+      border: 1px solid rgba(231,226,215,.9);
+      border-radius: 24px;
+      background: var(--white);
+      box-shadow: 0 18px 55px rgba(37, 32, 20, .08);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 11px;
+      margin-bottom: 30px;
+    }
+    .brand-mark {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      color: #fff;
+      background: linear-gradient(135deg, #D7B45D, var(--gold-dark));
+      font-weight: 800;
+      font-size: 20px;
+      box-shadow: 0 7px 16px rgba(184,138,36,.23);
+    }
+    .brand-name { font-size: 22px; font-weight: 750; letter-spacing: -.5px; }
+    .brand-name span { color: var(--gold-dark); }
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--gold-dark);
+      text-align: center;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1.8px;
+      text-transform: uppercase;
+    }
+    h1 { margin: 0; text-align: center; font-size: 28px; letter-spacing: -.8px; }
+    .intro {
+      margin: 12px 0 28px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+    .field { margin-bottom: 18px; }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      font-weight: 650;
+    }
+    .input-wrap { position: relative; }
+    input {
+      width: 100%;
+      min-height: 48px;
+      padding: 13px 48px 13px 14px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      outline: none;
+      color: var(--ink);
+      background: #fff;
+      font: inherit;
+      font-size: 14px;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    input:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(184,138,36,.14);
+    }
+    .toggle {
+      position: absolute;
+      top: 50%;
+      right: 10px;
+      transform: translateY(-50%);
+      border: 0;
+      padding: 6px;
+      color: var(--gold-dark);
+      background: transparent;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .hint { margin: 7px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .submit {
+      width: 100%;
+      min-height: 49px;
+      margin-top: 5px;
+      border: 0;
+      border-radius: 12px;
+      background: var(--gold);
+      color: #fff;
+      cursor: pointer;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 750;
+      box-shadow: 0 7px 15px rgba(184,138,36,.2);
+      transition: background .2s, transform .2s;
+    }
+    .submit:hover { background: var(--gold-dark); }
+    .submit:active { transform: translateY(1px); }
+    .submit:disabled { opacity: .65; cursor: wait; }
+    .message {
+      display: none;
+      margin: 0 0 18px;
+      padding: 12px 13px;
+      border-radius: 10px;
+      font-size: 13px;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
+    .message.show { display: block; }
+    .message.error { color: var(--danger); background: #FFF1F0; border: 1px solid #FFD5D2; }
+    .message.success { color: var(--success); background: #ECFDF3; border: 1px solid #ABEFC6; }
+    .footer {
+      margin: 25px 0 0;
+      color: var(--muted);
+      text-align: center;
+      font-size: 11px;
+      line-height: 1.6;
+    }
+    .footer strong { color: #575044; }
+    .hidden { display: none !important; }
+    .status-icon {
+      width: 58px;
+      height: 58px;
+      display: grid;
+      place-items: center;
+      margin: 0 auto 18px;
+      border-radius: 50%;
+      color: var(--success);
+      background: #ECFDF3;
+      font-size: 28px;
+    }
+    @media (max-width: 480px) {
+      .card { padding: 28px 22px; border-radius: 20px; }
+      h1 { font-size: 25px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="brand" aria-label="ProductFlow">
+      <div class="brand-mark" aria-hidden="true">P</div>
+      <div class="brand-name">Product<span>Flow</span></div>
+    </div>
+
+    <section id="resetPanel">
+      <p class="eyebrow">Account security</p>
+      <h1>Create new password</h1>
+      <p class="intro">Choose a strong password for your ProductFlow account. Your new password will be securely saved through Supabase.</p>
+
+      <div id="message" class="message" role="alert" aria-live="polite"></div>
+
+      <form id="resetForm" novalidate>
+        <div class="field">
+          <label for="password">New password</label>
+          <div class="input-wrap">
+            <input id="password" type="password" autocomplete="new-password" minlength="8" required placeholder="Enter a new password" />
+            <button class="toggle" type="button" data-target="password" aria-label="Show password">Show</button>
+          </div>
+          <p class="hint">Use at least 8 characters. A mix of letters, numbers and symbols is recommended.</p>
+        </div>
+
+        <div class="field">
+          <label for="confirmPassword">Confirm new password</label>
+          <div class="input-wrap">
+            <input id="confirmPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="Enter the password again" />
+            <button class="toggle" type="button" data-target="confirmPassword" aria-label="Show confirmation password">Show</button>
+          </div>
+        </div>
+
+        <button id="submitButton" class="submit" type="submit">Reset password</button>
+      </form>
+    </section>
+
+    <section id="successPanel" class="hidden">
+      <div class="status-icon" aria-hidden="true">✓</div>
+      <h1>Password updated</h1>
+      <p class="intro">Your ProductFlow password has been changed successfully. You can now return to the app and sign in with your new password.</p>
+      <button class="submit" type="button" id="closeButton">Done</button>
+    </section>
+
+    <p class="footer"><strong>ProductFlow</strong><br />Secure account access</p>
+  </main>
+
+  <!--
+    SETUP BEFORE USE:
+    1. Replace YOUR_SUPABASE_URL and YOUR_SUPABASE_ANON_KEY below.
+    2. Add this page's hosted HTTPS URL to Supabase Authentication > URL Configuration > Redirect URLs.
+    3. Configure the Supabase password-reset email template to redirect to this page.
+    4. Host this page on HTTPS for email links. A local assets HTML file alone cannot be opened by an email reset URL.
+    5. Never put a service_role key in browser code. Use only the project's publishable/anon key.
+  -->
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+    const SUPABASE_URL = 'https://akyfxbszkakraglqthiw.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFreWZ4YnN6a2FrcmFnbHF0aGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA5MDkzMTAsImV4cCI6MjEwNjQ4NTMxMH0.5FOIi-nInybYckGdKXoFM9yeXJ3Q5n7JsHHVcpalnb0';
+
+    const message = document.getElementById('message');
+    const form = document.getElementById('resetForm');
+    const passwordInput = document.getElementById('password');
+    const confirmInput = document.getElementById('confirmPassword');
+    const submitButton = document.getElementById('submitButton');
+    const resetPanel = document.getElementById('resetPanel');
+    const successPanel = document.getElementById('successPanel');
+
+    let supabase;
+    let recoveryReady = false;
+
+    function showMessage(text, kind = 'error') {
+      message.textContent = text;
+      message.className = `message show ${kind}`;
+    }
+
+    function clearMessage() {
+      message.textContent = '';
+      message.className = 'message';
+    }
+
+    function setLoading(loading) {
+      submitButton.disabled = loading;
+      submitButton.textContent = loading ? 'Updating password…' : 'Reset password';
+    }
+
+    function showSuccess() {
+      resetPanel.classList.add('hidden');
+      successPanel.classList.remove('hidden');
+    }
+
+    async function initializeRecovery() {
+      if (SUPABASE_URL === 'YOUR_SUPABASE_URL' ||
+          SUPABASE_ANON_KEY === 'YOUR_SUPABASE_ANON_KEY') {
+        showMessage('Setup is incomplete. Add your Supabase project URL and publishable/anon key to this HTML file.');
+        submitButton.disabled = true;
+        return;
+      }
+
+      supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+          autoRefreshToken: true,
+          persistSession: true,
+          detectSessionInUrl: true,
+          flowType: 'implicit'
+        }
+      });
+
+      // The Supabase recovery email usually returns access_token and refresh_token
+      // in the URL fragment. Let the SDK process the URL, then verify a session exists.
+      const { data: { session }, error } = await supabase.auth.getSession();
+
+      if (error) {
+        showMessage('The reset link could not be verified. Request a new password-reset email.');
+        return;
+      }
+
+      if (session) {
+        recoveryReady = true;
+        return;
+      }
+
+      // Support links that include tokens in the URL fragment, while avoiding
+      // displaying token values in the page.
+      const params = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+      const accessToken = params.get('access_token');
+      const refreshToken = params.get('refresh_token');
+      const type = params.get('type');
+
+      if (accessToken && refreshToken && (!type || type === 'recovery')) {
+        const { data, error: sessionError } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken
+        });
+
+        if (sessionError || !data.session) {
+          showMessage('This reset link is invalid or expired. Request a new one.');
+          return;
+        }
+
+        recoveryReady = true;
+        // Remove sensitive tokens from the visible address bar after the SDK has
+        // accepted the session. Do not do this before the session is established.
+        history.replaceState(null, document.title, window.location.pathname + window.location.search);
+        return;
+      }
+
+      showMessage('Your reset link is missing or has expired. Request a new password-reset email.');
+    }
+
+    document.querySelectorAll('.toggle').forEach((button) => {
+      button.addEventListener('click', () => {
+        const input = document.getElementById(button.dataset.target);
+        const shouldShow = input.type === 'password';
+        input.type = shouldShow ? 'text' : 'password';
+        button.textContent = shouldShow ? 'Hide' : 'Show';
+        button.setAttribute('aria-label', shouldShow ? 'Hide password' : 'Show password');
+      });
+    });
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      clearMessage();
+
+      const password = passwordInput.value;
+      const confirmation = confirmInput.value;
+
+      if (password.length < 8) {
+        showMessage('Your password must contain at least 8 characters.');
+        passwordInput.focus();
+        return;
+      }
+
+      if (password !== confirmation) {
+        showMessage('The passwords do not match. Please try again.');
+        confirmInput.focus();
+        return;
+      }
+
+      if (!supabase || !recoveryReady) {
+        showMessage('This recovery session is not valid. Open the latest reset link from your email.');
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const { error } = await supabase.auth.updateUser({ password });
+
+        if (error) {
+          showMessage(error.message || 'Unable to update the password. Request a new reset link if it has expired.');
+          return;
+        }
+
+        form.reset();
+        showSuccess();
+      } catch (error) {
+        showMessage('Something went wrong. Please try again or request a new reset link.');
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    document.getElementById('closeButton').addEventListener('click', () => {
+      // This is a browser page. The user can close it and return to ProductFlow.
+      window.close();
+    });
+
+    initializeRecovery();
+  </script>
+</body>
+</html>
